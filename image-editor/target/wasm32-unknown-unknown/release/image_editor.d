@@ -1,0 +1,1 @@
+/home/raveena/Documents/workspace/webassembly/wasm-pixels/image-editor/target/wasm32-unknown-unknown/release/image_editor.wasm: /home/raveena/Documents/workspace/webassembly/wasm-pixels/image-editor/src/lib.rs
