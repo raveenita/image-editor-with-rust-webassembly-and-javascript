@@ -26,8 +26,58 @@ resetButton.addEventListener('click', () => {
     const image = document.getElementById('image');
     
     image.src = originalImage;
+    console.log('Imagem voltou ao original');
 });
 
+nativeFilterButton.addEventListener('click', () => {
+    const image = document.getElementById('image');
+    const { canvas, context } = convertImageToCanvas(image);
+
+    const startTime = performance.now();
+    const base64Url = nativeFilterBlackAndWhite(canvas, context);
+    const endTime = performance.now();
+
+    timeToExecute(startTime, endTime, 'Filtro preto e branco nativo');
+
+    image.src = base64Url;
+});
+
+function timeToExecute(startTime, endTime, operationName) {
+    const performance = document.querySelector('#performance');
+
+    performance.textContent = `${operationName}: ${endTime - startTime} ms`;
+}
+
+
+function convertImageToCanvas(image) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    canvas.width = image.naturalWidth | image.width;
+    canvas.height = image.naturalHeight | image.height;
+
+    context.drawImage(image, 0, 0);
+
+    return { canvas, context };
+}
+
+function nativeFilterBlackAndWhite(canvas, context) {
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = imageData.data;
+    const divideByThree = (divider) => divider / 3;
+
+    for (let i = 0; i < pixels.length; i += 4) {
+        const filter = divideByThree(pixels[i]) + divideByThree(pixels[i] + 1) + divideByThree(pixels[i + 2]);
+        pixels[i] = filter;
+        pixels[i + 1] = filter;
+        pixels[i + 2] = filter;
+    }
+
+    context.putImageData(imageData, 0, 0);
+
+    return canvas.toDataURL('image/jpeg');
+
+}
 
 WebAssembly
 .instantiateStreaming(fetch(wasmFile))
