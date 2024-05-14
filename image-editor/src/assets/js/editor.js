@@ -2,8 +2,8 @@ const wasmFile = '../target/wasm32-unknown-unknown/release/image_editor.wasm';
 
 const input = document.querySelector('input[type="file"]');
 const resetButton = document.getElementById('removeFilter');
-const jsFilterBlackAndWhite = document.getElementById('preto-e-branco-js');
-const wasmFilter = document.getElementById('preto-e-branco-wasm');
+const nativeFilterButton = document.getElementById('nativeFilterButton');
+const wasmFilterButton = document.getElementById('wasmFilterButton');
 
 let originalImage = document.getElementById('image').src;
 
@@ -83,7 +83,7 @@ WebAssembly
 .instantiateStreaming(fetch(wasmFile))
 .then(wasm => {
     const { instance } = wasm;
-    const { subtraction, create_initial_memory, malloc, accumulate, memory } = instance.exports;
+    const { subtraction, create_initial_memory, malloc, black_and_white_filter, accumulate, memory } = instance.exports;
 
     create_initial_memory();
 
@@ -98,6 +98,37 @@ WebAssembly
     wasmList.set(list);
 
     const sumBetweenItemsFromList = accumulate(wasmListFirstPointer, list.length);
-
     console.log(sumBetweenItemsFromList);
+
+    wasmFilterButton.addEventListener('click', () => {
+        const image = document.getElementById('image');
+        const { canvas, context } = convertImageToCanvas(image);
+        const getImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+        const buffer = getImageData.data.buffer;
+        const u8Array = new Uint8Array(buffer); // from 0 to 255
+        const pointer = malloc(u8Array.length); // creates a pointer to the memory
+
+        let wasmArray = new Uint8ClampedArray(instance.exports.memory.buffer, pointer, u8Array.length);
+        
+        wasmArray.set(u8Array);
+
+        const startTime = performance.now();
+        black_and_white_filter(pointer, u8Array.length);
+        const endTime = performance.now();
+
+        timeToExecute(startTime, endTime, 'Filtro preto e branco com WASM');
+
+        const width = image.naturalWidth | image.width;
+        const height = image.naturalHeight | image.height;
+
+        const newImageData = context.createImageData(width, height);
+
+        newImageData.data.set(wasmArray);
+        context.putImageData(newImageData, 0, 0);
+
+        image.src = canvas.toDataURL('image/jpeg');
+    });
+    
+
 }); 

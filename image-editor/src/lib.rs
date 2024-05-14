@@ -54,3 +54,23 @@ extern fn accumulate(pointer: *mut u8, length: usize) -> i32 {
 
     sum as i32
 }
+
+#[no_mangle]
+extern fn black_and_white_filter(pointer: *mut u8, length: usize) {
+    let pixels = unsafe { from_raw_parts_mut(pointer as *mut u8, length) };
+    let mut i = 0;
+    loop {
+        if i >= length - 1 {
+            break;
+        }
+
+        let filter = (pixels[i] / 3 + pixels[i + 1] / 3 + pixels[i + 2]  / 3);
+
+        pixels[i] = filter;
+        pixels[i + 1] = filter;
+        pixels[i + 2] = filter;
+
+        i += 4;
+    }
+
+}
