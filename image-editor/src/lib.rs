@@ -22,7 +22,7 @@ fn create_initial_memory() {
 }
 
 #[no_mangle]
-extern fn malloc(length: usize) -> *mut u8 {
+extern fn alloc_memory(length: usize) -> *mut u8 {
     let alignment = mem::align_of::<usize>();
 
     if let Ok(layout) = Layout::from_size_align(length, alignment) {
@@ -56,7 +56,7 @@ extern fn accumulate(pointer: *mut u8, length: usize) -> i32 {
 }
 
 #[no_mangle]
-extern fn black_and_white_filter(pointer: *mut u8, length: usize) {
+extern fn filter_black_and_white(pointer: *mut u8, length: usize) {
     let pixels = unsafe { from_raw_parts_mut(pointer as *mut u8, length) };
     let mut i = 0;
     loop {
@@ -64,7 +64,7 @@ extern fn black_and_white_filter(pointer: *mut u8, length: usize) {
             break;
         }
 
-        let filter = (pixels[i] / 3 + pixels[i + 1] / 3 + pixels[i + 2]  / 3);
+        let filter = pixels[i] / 3 + pixels[i + 1] / 3 + pixels[i + 2]  / 3;
 
         pixels[i] = filter;
         pixels[i + 1] = filter;
@@ -73,4 +73,59 @@ extern fn black_and_white_filter(pointer: *mut u8, length: usize) {
         i += 4;
     }
 
+}
+
+#[no_mangle]
+extern fn filter_red(data: *mut u8,  len: usize) {
+    let pixels = unsafe { from_raw_parts_mut(data as *mut u8, len) };
+    let mut i = 0;
+    loop {
+        if i >= len - 1 {
+            break;
+        }
+
+        pixels[i + 1] = pixels[i + 1] / 2;
+        pixels[i + 2] = pixels[i + 2] / 2;
+        pixels[i + 5] = pixels[i + 5] / 2;
+        pixels[i + 6] = pixels[i + 6] / 2;
+
+        i += 8;
+    }
+}
+
+#[no_mangle]
+extern fn filter_green(data: *mut u8,  len: usize) {
+    let pixels = unsafe { from_raw_parts_mut(data as *mut u8, len) };
+    let mut i = 0;
+    loop {
+        if i >= len - 1 {
+            break;
+        }
+
+        pixels[i] = pixels[i] / 2;
+        pixels[i + 1] = pixels[i + 1] / 2;
+        pixels[i + 2] = pixels[i + 2] / 2;
+        pixels[i + 4] = pixels[i + 4] / 2;
+        pixels[i + 6] = pixels[i + 6] / 2;
+
+        i += 8;
+    }
+}
+
+#[no_mangle]
+extern fn filter_blue(data: *mut u8,  len: usize) {
+    let pixels = unsafe { from_raw_parts_mut(data as *mut u8, len) };
+    let mut i = 0;
+    loop {
+        if i >= len - 1 {
+            break;
+        }
+
+        pixels[i] = pixels[i] / 2;
+        pixels[i + 1] = pixels[i + 1] / 2;
+        pixels[i + 4] = pixels[i + 4] / 2;
+        pixels[i + 5] = pixels[i + 5] / 2;
+
+        i += 8;
+    }
 }
