@@ -3,7 +3,6 @@ const wasmFile = '../target/wasm32-unknown-unknown/release/image_editor.wasm';
 const input = document.querySelector('input[type="file"]');
 const resetButton = document.getElementById('removeFilter');
 const nativeFilterButton = document.getElementById('nativeFilterButton');
-const wasmFilterButton = document.getElementById('wasmFilterBlackAndWhite');
 
 let originalImage = document.getElementById('image').src;
 
@@ -48,7 +47,6 @@ function logTimeExecution(startTime, endTime, operationName) {
     performance.textContent = `${operationName}: ${endTime - startTime} ms`;
 }
 
-
 function convertImageToCanvas(image) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
@@ -90,6 +88,8 @@ WebAssembly
         filter_red,
         filter_green,
         filter_blue,
+        filter_opacity,
+        filter_inversion,
         memory
     } = instance.exports;
 
@@ -111,6 +111,14 @@ WebAssembly
     });
     addFilter('Verde WASM', '#wasmFilterGreen', {
         instance, filter: filter_green
+    });
+
+    addFilter('Opacidade WASM', '#wasmFilterOpacity', {
+        instance, filter: filter_opacity
+    });
+
+    addFilter('Inversão WASM', '#wasmFilterInversion', {
+        instance, filter: filter_inversion
     });
 }); 
 

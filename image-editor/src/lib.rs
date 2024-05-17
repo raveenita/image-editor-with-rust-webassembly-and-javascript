@@ -129,3 +129,38 @@ extern fn filter_blue(data: *mut u8,  len: usize) {
         i += 8;
     }
 }
+
+#[no_mangle]
+extern fn filter_opacity(data: *mut u8, len: usize) {
+    let pixels = unsafe { from_raw_parts_mut(data as *mut u8, len) };
+    let mut i = 0;
+    let alpha = 10;
+
+    loop {
+        if i >= len - 1 {
+            break;
+        }
+
+        let actual_value = pixels[1 + 3];
+        if actual_value >= alpha {
+            pixels[1 + 3] = actual_value - alpha;
+        } else {
+            pixels[1 + 3] = 0;
+        }
+
+        i += 4;
+    }
+}
+
+#[no_mangle]
+extern fn filter_inversion(data: *mut u8, len: usize) {
+    let pixels = unsafe { 
+        from_raw_parts_mut(data as *mut u8, len) 
+    };
+
+    for i in (0..len - 1).step_by(4) {
+        pixels[i] = 255 - pixels[i];
+        pixels[i + 1] = 255 - pixels[i + 1];
+        pixels[i + 2] = 255 - pixels[i + 2];
+    }
+}
